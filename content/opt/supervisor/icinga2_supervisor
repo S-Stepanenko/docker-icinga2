@@ -1,0 +1,19 @@
+#!/bin/bash
+
+. /opt/helpers
+
+if [ ! -e '/var/run/icinga2' ]; then
+  mkdir /var/run/icinga2
+  mkdir /var/run/icinga2/cmd
+  chown nagios:www-data /var/run/icinga2/cmd
+  chmod 2710 /var/run/icinga2/cmd
+  chown nagios:nagios /var/run/icinga2
+  chmod 0755 /var/run/icinga2
+fi
+
+service icinga2 foreground &
+
+# Allow any signal which would kill a process to stop server
+trap "service icinga2 stop" HUP INT QUIT ABRT ALRM TERM TSTP
+
+while pgrep -u nagios icinga2 > /dev/null; do sleep 5; done

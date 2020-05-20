@@ -1,0 +1,58 @@
+#!/bin/bash
+
+
+CNFSUFFIX=icinga2
+mysql_cnf_init_section \
+	"${CNFSUFFIX}" \
+	"${ICINGA2_IDO_MYSQL_HOST}" \
+	"${ICINGA2_IDO_MYSQL_PORT}" \
+	"${ICINGA2_IDO_MYSQL_USER}" \
+	"${ICINGA2_IDO_MYSQL_DATA}" \
+	"${ICINGA2_IDO_MYSQL_PASS}"
+mysql_wait \
+	"${ICINGA2_IDO_MYSQL_HOST}" \
+	"${ICINGA2_IDO_MYSQL_PORT}"
+
+# chown directories and files that might be coming from volumes
+mkdir -p /var/log/icinga2/compat/archives
+chown -R nagios:adm /var/log/icinga2
+mkdir -p /var/lib/icinga2/api/zones
+mkdir -p /var/lib/icinga2/api/log
+mkdir -p /var/lib/icinga2/api/repository
+chown -R nagios:nagios /var/lib/icinga2
+chown -R nagios:nagios /var/spool/icinga2
+chown -R nagios:nagios /var/cache/icinga2
+
+chown -R nagios:root /etc/icinga2
+
+# enable necessary features
+icinga2 feature enable ido-mysql livestatus compatlog command
+
+#icinga2 API cert - regenerate new private key and certificate when running in a new container
+if [ ! -f "/var/lib/icinga2/certs/$(hostname).key" ]; then
+	icinga2 node setup --master
+fi
+
+chfn -f "${ICINGA2_USER_FULLNAME}" nagios
+
+mysql_user \
+	< /usr/share/icinga2-ido-mysql/schema/mysql.sql \
+	>> /var/log/icinga2/mysql-schema.log \
+	2>&1 || true
+
+cat > /etc/icinga2/features-available/ido-mysql.conf <<-END
+/**
+ * The db_ido_mysql library implements IDO functionality
+ * for MySQL.
+ */
+
+library "db_ido_mysql"
+
+object IdoMysqlConnection "ido-mysql" {
+  user     = "${ICINGA2_IDO_MYSQL_USER}"
+  password = "${ICINGA2_IDO_MYSQL_PASS}"
+  host     = "${ICINGA2_IDO_MYSQL_HOST}"
+  port     =  ${ICINGA2_IDO_MYSQL_PORT}
+  database = "${ICINGA2_IDO_MYSQL_DATA}"
+}
+END
