@@ -1,6 +1,3 @@
-# Dockerfile for icinga2 with icingaweb2
-# https://github.com/jjethwa/icinga2
-
 FROM debian:buster
 
 ENV APACHE2_HTTP=REDIRECT \
