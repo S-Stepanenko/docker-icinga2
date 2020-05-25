@@ -13,14 +13,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-    curl gnupg gnupg2 gnupg1
+    curl gnupg gnupg2 gnupg1 ca-certificates supervisor locales pwgen
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-    && curl -s https://packages.icinga.com/icinga.key \
-    | apt-key add - \
-    && echo "deb http://packages.icinga.org/debian icinga-$(lsb_release -cs) main" > /etc/apt/sources.list.d/icinga2.list \
-    && echo "deb http://deb.debian.org/debian $(lsb_release -cs)-backports main" > /etc/apt/sources.list.d/$(lsb_release -cs)-backports.list \
-    && apt-get update \
     && apt-get install -y --install-recommends \
     icinga2 \
     icinga2-ido-pgsql \
@@ -30,14 +25,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-
 ADD content/ /
 
 # Final fixes
 RUN true \
     && sed -i 's/vars\.os.*/vars.os = "Docker"/' /etc/icinga2/conf.d/hosts.conf \
-    && mv /etc/icinga2/ /etc/icinga2.dist \
-    && mkdir -p /etc/icinga2 \
+    #&& mv /etc/icinga2/ /etc/icinga2.dist \
+    #&& mkdir -p /etc/icinga2 \
     && mkdir -p /var/log/icinga2 \
     && chmod 755 /var/log/icinga2 \
     && chown nagios:adm /var/log/icinga2 \
@@ -45,6 +39,9 @@ RUN true \
     /bin/ping \
     /bin/ping6 \
     /usr/lib/nagios/plugins/check_icmp
+
+RUN icinga2 api setup \
+    && icinga2 feature enable ido-pgsql livestatus compatlog command checker
 
 EXPOSE 5665
 

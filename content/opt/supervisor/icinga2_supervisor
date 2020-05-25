@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. /opt/helpers
-
 if [ ! -e '/var/run/icinga2' ]; then
   mkdir /var/run/icinga2
   mkdir /var/run/icinga2/cmd
