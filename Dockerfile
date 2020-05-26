@@ -29,9 +29,6 @@ ADD content/ /
 
 # Final fixes
 RUN true \
-    && sed -i 's/vars\.os.*/vars.os = "Docker"/' /etc/icinga2/conf.d/hosts.conf \
-    #&& mv /etc/icinga2/ /etc/icinga2.dist \
-    #&& mkdir -p /etc/icinga2 \
     && mkdir -p /var/log/icinga2 \
     && chmod 755 /var/log/icinga2 \
     && chown nagios:adm /var/log/icinga2 \
@@ -41,7 +38,10 @@ RUN true \
     /usr/lib/nagios/plugins/check_icmp
 
 RUN icinga2 api setup \
-    && icinga2 feature enable ido-pgsql livestatus compatlog command checker
+    && icinga2 feature enable ido-pgsql livestatus compatlog command checker \
+    && icinga2 node setup --master \
+    && rm -f /etc/icinga2/constants.conf \
+    && rm -f /etc/icinga2/zones.conf
 
 EXPOSE 5665
 

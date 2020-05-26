@@ -9,29 +9,5 @@ mkdir -p /var/lib/icinga2/api/repository
 chown -R nagios:nagios /var/lib/icinga2
 chown -R nagios:nagios /var/spool/icinga2
 chown -R nagios:nagios /var/cache/icinga2
-
 chown -R nagios:root /etc/icinga2
-
-#icinga2 API cert - regenerate new private key and certificate when running in a new container
-if [ ! -f "/var/lib/icinga2/certs/$(hostname).key" ]; then
-	icinga2 node setup --master
-fi
-
 chfn -f "${ICINGA2_USER_FULLNAME}" nagios
-
-# cat > /etc/icinga2/features-available/ido-mysql.conf <<-END
-# /**
-#  * The db_ido_mysql library implements IDO functionality
-#  * for MySQL.
-#  */
-
-# library "db_ido_mysql"
-
-# object IdoMysqlConnection "ido-mysql" {
-#   user     = "${ICINGA2_IDO_MYSQL_USER}"
-#   password = "${ICINGA2_IDO_MYSQL_PASS}"
-#   host     = "${ICINGA2_IDO_MYSQL_HOST}"
-#   port     =  ${ICINGA2_IDO_MYSQL_PORT}
-#   database = "${ICINGA2_IDO_MYSQL_DATA}"
-# }
-# END
