@@ -13,9 +13,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-    curl gnupg gnupg2 gnupg1 ca-certificates supervisor locales pwgen
+    curl wget gnupg gnupg2 gnupg1 ca-certificates supervisor locales pwgen
 
 RUN export DEBIAN_FRONTEND=noninteractive \
+    && wget -O - https://packages.icinga.com/icinga.key | apt-key add \
+    && echo "deb https://packages.icinga.com/debian icinga-buster main" > /etc/apt/sources.list.d/icinga.list \
+    && echo "deb-src https://packages.icinga.com/debian icinga-buster main" >> /etc/apt/sources.list.d/icinga.list\
+    && apt update \
     && apt-get install -y --install-recommends \
     icinga2 \
     icinga2-ido-pgsql \
@@ -45,5 +49,4 @@ RUN icinga2 api setup \
 
 EXPOSE 5665
 
-# Initialize and run Supervisor
 ENTRYPOINT ["/opt/run"]
