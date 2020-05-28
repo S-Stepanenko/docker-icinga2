@@ -43,9 +43,7 @@ RUN true \
 
 RUN icinga2 api setup \
     && icinga2 feature enable ido-pgsql livestatus compatlog command checker \
-    && icinga2 node setup --master \
-    && rm -f /etc/icinga2/constants.conf \
-    && rm -f /etc/icinga2/zones.conf
+    && icinga2 node setup --master
 
 EXPOSE 5665
 
