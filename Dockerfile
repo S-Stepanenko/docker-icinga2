@@ -34,7 +34,7 @@ RUN true \
     /usr/lib/nagios/plugins/check_icmp
 
 RUN icinga2 api setup \
-    && icinga2 feature enable ido-pgsql livestatus compatlog command checker \
+    && icinga2 feature enable ido-pgsql livestatus compatlog command checker graphite \
     && icinga2 node setup --master
 
 EXPOSE 5665
